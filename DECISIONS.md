@@ -58,3 +58,17 @@ worst thing that could land in a public repo, and nothing was ignoring it. `.let
 was likewise covered only by a global gitignore — rules outside the repo do not travel
 with a clone, which is exactly how a fresh clone ends up tracking files the author
 never sees.
+
+## 2026-08-04 — Tests run on Node 22 only; the runtime floor is proven separately
+
+CI's first run failed on Node 18 with `bad option: --experimental-strip-types`. That
+flag arrived in Node 22.6, and the test script uses it to run `.ts` files directly.
+
+The tempting fix — raise `engines` to `>=22` — would have been wrong. The shipped
+artifact is compiled `dist/*.js`, `@modelcontextprotocol/sdk` declares `>=18`, and the
+build targets ES2022, all of which Node 18 handles. The constraint belongs to the test
+harness, not the package.
+
+So tests run on 22, and a `runtime` job builds and then imports the built server on
+both 18 and 22 with production dependencies only. That validates the `engines` claim
+against the thing users actually install, which the test job never could.
