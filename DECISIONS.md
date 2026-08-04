@@ -72,3 +72,23 @@ harness, not the package.
 So tests run on 22, and a `runtime` job builds and then imports the built server on
 both 18 and 22 with production dependencies only. That validates the `engines` claim
 against the thing users actually install, which the test job never could.
+
+## 2026-08-04 — The public repo is canonical; no private mirror
+
+Considered developing privately and mirroring out, matching the pattern used for
+`obsidian-automation`. Rejected: that mirror earns its place because `~/.claude` has
+to be the live source of truth and the repo is a versioning layer on top. Nothing
+here is like that.
+
+The audit found nothing in this codebase that needs hiding — no secrets, no homelab
+addresses, no personal paths. The NAS-specific configuration lives in the MCP wrapper
+outside the repo, where it belongs.
+
+The deciding cost was contributions. A one-way mirror means any pull request opened
+against the public repo gets clobbered on the next sync or has to be hand-ported. For
+a package that ships a `bugs` URL and invites issues, that is a bad trade for staging
+that nothing currently requires.
+
+`maverick0628/truenas-ws-mcp` is archived. Its `src/` and `test/` were byte-identical
+to this repo at the split, so nothing is stranded there — every difference was an
+improvement that exists only here.
