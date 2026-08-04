@@ -15,19 +15,15 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # 18 is the floor declared in package.json engines; 22 is current LTS.
-        # The test runner uses --experimental-strip-types, which is where these
-        # versions are most likely to diverge, so both are worth running.
-        node: ['18', '22']
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          # The test script runs .ts files directly via --experimental-strip-types,
+          # which arrived in Node 22.6. That is a constraint on the test harness, not
+          # on the shipped package — the `runtime` job below proves the floor.
+          node-version: '22'
           cache: npm
 
       - name: Install
@@ -39,22 +35,31 @@ jobs:
       - name: Test
         run: npm test
 
-  # zod is imported by src/ but was once declared only as a devDependency, where
-  # it resolved by accident through @modelcontextprotocol/sdk's own copy. That
-  # works under npm's hoisting and breaks under a strict layout. This job installs
-  # production dependencies only and imports the built server, so the mistake
-  # cannot come back unnoticed.
-  production-install:
+  runtime:
+    # Two claims are checked here, both of which have already been wrong once.
+    #
+    # 1. package.json says `engines: >=18`, and @modelcontextprotocol/sdk agrees.
+    #    Nothing was verifying it, and the test job cannot — it needs 22.6+.
+    # 2. zod is imported by src/ but was once declared only as a devDependency,
+    #    where it resolved by accident through the MCP SDK's own copy. That works
+    #    under npm hoisting and breaks under a strict layout such as pnpm's.
+    #
+    # Building, then reinstalling with --omit=dev, then importing the built server
+    # on the floor version catches both.
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '22']
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node }}
           cache: npm
 
-      - name: Build with dev dependencies
+      - name: Build
         run: |
           npm ci
           npm run build
@@ -65,4 +70,4 @@ jobs:
           npm ci --omit=dev
 
       - name: Every runtime import must resolve
-        run: node --input-type=module -e "await import('./dist/index.js'); console.log('runtime imports OK')"
+        run: node --input-type=module -e "await import('./dist/index.js'); console.log('runtime imports OK on node ' + process.version)"
