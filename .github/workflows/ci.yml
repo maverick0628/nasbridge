@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only by default. This repo is public, so pull_request runs are triggerable
+# by anyone with a fork — no job here should hold a write token or see a secret.
+# If a publish job is ever added, scope its permissions to that job alone rather
+# than raising them here.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 18 is the floor declared in package.json engines; 22 is current LTS.
+        # The test runner uses --experimental-strip-types, which is where these
+        # versions are most likely to diverge, so both are worth running.
+        node: ['18', '22']
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+  # zod is imported by src/ but was once declared only as a devDependency, where
+  # it resolved by accident through @modelcontextprotocol/sdk's own copy. That
+  # works under npm's hoisting and breaks under a strict layout. This job installs
+  # production dependencies only and imports the built server, so the mistake
+  # cannot come back unnoticed.
+  production-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build with dev dependencies
+        run: |
+          npm ci
+          npm run build
+
+      - name: Reinstall without dev dependencies
+        run: |
+          rm -rf node_modules
+          npm ci --omit=dev
+
+      - name: Every runtime import must resolve
+        run: node --input-type=module -e "await import('./dist/index.js'); console.log('runtime imports OK')"

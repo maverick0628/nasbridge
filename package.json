@@ -1,0 +1,63 @@
+{
+  "name": "nasbridge",
+  "version": "1.0.0",
+  "description": "MCP server for TrueNAS — manage ZFS pools, datasets, snapshots, SMB/NFS shares, VMs and replication from Claude Desktop, Claude Code or Cursor. 278 actions behind one hierarchical tool.",
+  "license": "MIT",
+  "author": "Duncan Smith",
+  "homepage": "https://github.com/maverick0628/nasbridge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maverick0628/nasbridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maverick0628/nasbridge/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "truenas",
+    "truenas-scale",
+    "freenas",
+    "zfs",
+    "nas",
+    "storage",
+    "homelab",
+    "self-hosted",
+    "websocket",
+    "json-rpc",
+    "claude",
+    "claude-desktop",
+    "ai-agents"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "nasbridge": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "ws": "^8.18.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+node_modules/
+dist/
+*.js.map
+
+# Credentials. This server talks to a NAS, so a local .env holds TRUENAS_API_KEY —
+# the single worst thing that could land in a public repo. Never leave this to a
+# global gitignore: those rules do not travel with a clone.
+.env
+.env.*
+!.env.example
+
+# Agent scratch and working documents, kept local and out of the published repo.
+# .letta/ was previously covered only by ~/.gitignore_global, so a fresh clone
+# would have tracked it.
+.claude/
+.letta/
+docs/superpowers/
+PLAN.md
+
+# OS and editor
+.DS_Store
+*.log
