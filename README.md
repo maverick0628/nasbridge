@@ -78,10 +78,15 @@ Read-only resources surface common state without a tool call: `truenas://system/
 
 The client connects with `wss://` by default. A self-signed cert needs `TRUENAS_VERIFY_SSL=false`.
 
+> **Don't pass a `ws://` URL.** `http://` and `https://` are rewritten to `wss://`, but an
+> explicit `ws://` is left alone — and TrueNAS **auto-revokes any API key it sees used over
+> an insecure transport**. You get an authentication failure that looks like a bad key, and
+> the key really is dead. Regenerate it and connect over `wss://`.
+
 ## Requirements
 
 - TrueNAS **26** or later (earlier versions expose a different WebSocket shape)
-- Node.js 20+
+- Node.js 18+ (CI proves the built server imports on 18 and 22)
 - A TrueNAS API key — Credentials → API Keys → Add
 - An MCP client: Claude Desktop, Claude Code, Cursor, or anything else speaking MCP
 
