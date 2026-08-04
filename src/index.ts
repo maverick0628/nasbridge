@@ -12,12 +12,12 @@ export function createServer(config) {
         verifySsl: config.verifySsl,
     });
     const server = new McpServer({
-        name: "truenas-mcp",
+        name: "nasbridge",
         version: "1.0.0",
-        description: "Comprehensive MCP server for TrueNAS SCALE — 278 tools behind a single hierarchical interface",
+        description: "MCP server for TrueNAS — 278 actions behind a single hierarchical tool",
     });
     const registry = buildRegistry(client);
-    server.tool("truenas", `Manage your TrueNAS SCALE system. 278 actions organized in categories.
+    server.tool("truenas", `Manage your TrueNAS system. 278 actions organized in categories.
 
 Usage:
   - No args or category="help" → list all categories
