@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-09-16 — Decision log names no private repos
+
+The earlier entries named a private predecessor repo, a private automation mirror and a
+path inside Duncan's home directory. None of those are readable from here, so the names
+added nothing for a reader and exposed private project structure. They now say "the
+predecessor repo" and "another project". The decisions themselves are unchanged. Git
+history still has the old wording.
+
 ## 2026-09-16 — CLI hint prints the URL the client actually builds
 
 The missing-URL hint said the client connects to `ws://host/api/current`, the one scheme
@@ -12,7 +20,7 @@ behaviour, so it was left out of this fix and stays documented as a warning.
 
 ## 2026-08-04 — Published as a fresh repo rather than flipping the private one
 
-The predecessor, `maverick0628/truenas-ws-mcp`, stays private. Its history audited
+The predecessor repo stays private. Its history audited
 clean — no secrets, no personal email, no absolute paths across all 13 commits — so
 flipping it would have been safe. A fresh repo was chosen anyway, to publish a
 deliberate initial state rather than a development history, and because the rename
@@ -20,13 +28,13 @@ was happening regardless.
 
 ## 2026-08-04 — Renamed to nasbridge
 
-`truenas-ws-mcp` embedded iXsystems' TrueNAS trademark in the product name, the same
+The working name embedded iXsystems' TrueNAS trademark in the product name, the same
 shape as a rename already made elsewhere for using a vendor's mark. The risk was
 lower here — "an MCP server for TrueNAS" is descriptive, nominative use rather than a
 coined product identity — but renaming sidesteps it at no cost.
 
-The `ws` half was also an implementation detail. Nobody choosing this tool cares that
-the transport is WebSocket.
+It also named the transport, an implementation detail. Nobody choosing this tool cares
+that the transport is WebSocket.
 
 `nasbridge` was picked over more evocative candidates specifically to keep keyword
 discoverability: someone searching "nas mcp" should find it. The GitHub description,
@@ -85,10 +93,9 @@ against the thing users actually install, which the test job never could.
 
 ## 2026-08-04 — The public repo is canonical; no private mirror
 
-Considered developing privately and mirroring out, matching the pattern used for
-`obsidian-automation`. Rejected: that mirror earns its place because `~/.claude` has
-to be the live source of truth and the repo is a versioning layer on top. Nothing
-here is like that.
+Considered developing privately and mirroring out, a pattern used for another project.
+Rejected: that mirror earns its place because its live source of truth sits outside
+the repo and the repo is only a versioning layer on top. Nothing here is like that.
 
 The audit found nothing in this codebase that needs hiding — no secrets, no homelab
 addresses, no personal paths. The NAS-specific configuration lives in the MCP wrapper
@@ -99,6 +106,6 @@ against the public repo gets clobbered on the next sync or has to be hand-ported
 a package that ships a `bugs` URL and invites issues, that is a bad trade for staging
 that nothing currently requires.
 
-`maverick0628/truenas-ws-mcp` is archived. Its `src/` and `test/` were byte-identical
+The predecessor repo is archived. Its `src/` and `test/` were byte-identical
 to this repo at the split, so nothing is stranded there — every difference was an
 improvement that exists only here.
