@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-09-16 — CLI hint prints the URL the client actually builds
+
+The missing-URL hint said the client connects to `ws://host/api/current`, the one scheme
+that gets a TrueNAS API key revoked, while the client has always used `wss://`. The hint
+now prints `toWebSocketUrl()`, the function the client connects with, so the two cannot
+drift again.
+
+An explicit `ws://` still passes through unchanged. Rewriting or rejecting it would change
+behaviour, so it was left out of this fix and stays documented as a warning.
+
 ## 2026-08-04 — Published as a fresh repo rather than flipping the private one
 
 The predecessor, `maverick0628/truenas-ws-mcp`, stays private. Its history audited

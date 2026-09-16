@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { WebSocketServer } from "ws";
-import { TrueNASClient } from "../src/client.ts";
+import { TrueNASClient, toWebSocketUrl } from "../src/client.ts";
 
 function createMockServer(port: number): { wss: WebSocketServer; calls: Array<{ method: string; params: unknown[] }> } {
   const calls: Array<{ method: string; params: unknown[] }> = [];
@@ -105,5 +105,30 @@ describe("TrueNASClient (WebSocket)", () => {
   it("ping returns true", async () => {
     const ok = await client.ping();
     assert.ok(ok);
+  });
+});
+
+describe("toWebSocketUrl", () => {
+  it("rewrites http:// and https:// to wss://", () => {
+    assert.equal(toWebSocketUrl("http://truenas.local"), "wss://truenas.local/api/current");
+    assert.equal(toWebSocketUrl("https://truenas.local"), "wss://truenas.local/api/current");
+  });
+
+  it("adds wss:// to a bare host", () => {
+    assert.equal(toWebSocketUrl("truenas.local"), "wss://truenas.local/api/current");
+  });
+
+  it("strips trailing slashes and keeps an explicit /api/ path", () => {
+    assert.equal(toWebSocketUrl("https://truenas.local/"), "wss://truenas.local/api/current");
+    assert.equal(toWebSocketUrl("wss://truenas.local/api/v25.04.0"), "wss://truenas.local/api/v25.04.0");
+  });
+
+  it("leaves an explicit ws:// URL unchanged, as the README warns", () => {
+    assert.equal(toWebSocketUrl("ws://truenas.local"), "ws://truenas.local/api/current");
+  });
+
+  it("is the URL the client connects to", () => {
+    const c = new TrueNASClient({ baseUrl: "http://truenas.local", apiKey: "1-testkey123" });
+    assert.equal(c.url("/pool"), "wss://truenas.local/api/current -> /pool");
   });
 });
