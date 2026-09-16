@@ -49,18 +49,28 @@ The `truenas` tool takes `category`, `action` and `params`:
 - `category` only — list the actions in that category and their parameters
 - `category` + `action` + `params` — execute
 
-278 actions are wired across these categories:
+278 actions are wired across 18 categories:
 
 | Category | Covers |
 |----------|--------|
-| `system` | System info, services, mail, API keys, power, NTP |
+| `system` | System info, services, mail, API keys, power, NTP, config backup |
 | `storage` | Pools, datasets, snapshots, periodic snapshot tasks |
 | `sharing` | SMB, NFS and iSCSI (targets, extents, portals, initiators) |
-| `network` | Interfaces, global config, static routes, staged changes |
+| `network` | Interfaces, global config, static routes, IPMI, staged changes |
+| `account` | Users, groups and privileges |
+| `disk` | Physical disks, SMART tests, temperatures, wipe |
 | `vm` | Virtual machines and VM devices |
+| `app` | Apps (install, upgrade, rollback, images) and Docker config |
+| `update` | System updates, boot environments, boot pool |
+| `certificate` | TLS certificates, ACME servers and DNS authenticators |
 | `alert` | System alerts and alert notification services |
-| `data_protection` | Replication, cloud sync/backup, cron, rsync, SSH credentials |
+| `data_protection` | Replication, cloud sync/backup, cron, rsync, init/shutdown scripts, SSH credentials |
 | `filesystem` | stat, listdir, mkdir, permissions, ACLs, ownership |
+| `reporting` | Reporting config, graphs and time-series data |
+| `directory` | Directory services (AD, LDAP) and Kerberos |
+| `service_config` | SSH, FTP, SNMP and UPS config, system tunables |
+| `audit` | Audit log queries and audit config |
+| `api` | `truenas_api_call`, a raw escape hatch for any endpoint the other actions don't cover |
 
 Destructive actions (reboot, shutdown and similar) require an explicit `confirm: true` parameter.
 
@@ -125,7 +135,7 @@ Desktop that is `claude_desktop_config.json`, for Claude Code `.mcp.json`:
 npm test
 ```
 
-Unit tests cover the REST-to-WebSocket path translator and the client against a mock WebSocket server. `test/e2e-live.mjs` runs the dataset create/get flow against a real TrueNAS instance.
+Unit tests cover the REST-to-WebSocket path translator, the dataset property normalisation and the client against a mock WebSocket server. `test/e2e-live.mjs` runs the dataset create/get flow against a real TrueNAS instance.
 
 ## Notes
 
