@@ -13,6 +13,14 @@ interface PendingRequest {
   timer: ReturnType<typeof setTimeout>;
 }
 
+export function toWebSocketUrl(baseUrl: string): string {
+  let base = baseUrl.replace(/\/+$/, "");
+  if (base.startsWith("http://")) base = "wss://" + base.slice(7);
+  else if (base.startsWith("https://")) base = "wss://" + base.slice(8);
+  if (!base.startsWith("ws://") && !base.startsWith("wss://")) base = "wss://" + base;
+  return base.includes("/api/") ? base : base + "/api/current";
+}
+
 export class TrueNASClient {
   private ws: WebSocket | null = null;
   private readonly wsUrl: string;
@@ -24,11 +32,7 @@ export class TrueNASClient {
   private connected = false;
 
   constructor(config: ClientConfig) {
-    let base = config.baseUrl.replace(/\/+$/, "");
-    if (base.startsWith("http://")) base = "wss://" + base.slice(7);
-    else if (base.startsWith("https://")) base = "wss://" + base.slice(8);
-    if (!base.startsWith("ws://") && !base.startsWith("wss://")) base = "wss://" + base;
-    this.wsUrl = base.includes("/api/") ? base : base + "/api/current";
+    this.wsUrl = toWebSocketUrl(config.baseUrl);
     this.apiKey = config.apiKey;
     this.verifySsl = config.verifySsl ?? true;
   }
