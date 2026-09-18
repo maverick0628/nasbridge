@@ -1,8 +1,9 @@
-// @ts-nocheck
 /**
  * Tool Registry — captures tool definitions from modules and organizes them
  * into categories for hierarchical discovery via a single MCP tool.
  */
+import type { ToolExecutor } from "./run-tool.ts";
+
 const CATEGORIES = {
     system: "System info, configuration, services, mail, API keys, and NTP",
     storage: "Storage pools, datasets, snapshots, and periodic snapshot tasks",
@@ -23,16 +24,29 @@ const CATEGORIES = {
     audit: "Audit logs, audit configuration, and system security",
     api: "Raw API escape hatch — call any TrueNAS REST endpoint directly",
 };
-export class ToolRegistry {
-    tools = new Map();
+type Category = keyof typeof CATEGORIES;
+type ToolParams = Record<string, unknown>;
+type ToolSchema = Record<string, unknown>;
+type ToolHandler = (params: ToolParams) => unknown;
+
+interface RegisteredTool {
+    name: string;
+    description: string;
+    schema: ToolSchema;
+    handler: ToolHandler;
+    category: Category;
+}
+
+export class ToolRegistry implements ToolExecutor {
+    tools = new Map<string, RegisteredTool>();
     /** Called by existing register() functions in place of McpServer.tool() */
-    tool(name, description, schema, handler) {
+    tool(name: string, description: string, schema: ToolSchema, handler: ToolHandler): void {
         const category = categorize(name);
         this.tools.set(name, { name, description, schema, handler, category });
     }
     /** List all categories with descriptions and tool counts */
-    listCategories() {
-        const counts = new Map();
+    listCategories(): string {
+        const counts = new Map<string, number>();
         for (const tool of this.tools.values()) {
             counts.set(tool.category, (counts.get(tool.category) || 0) + 1);
         }
@@ -50,8 +64,8 @@ export class ToolRegistry {
         return lines.join("\n");
     }
     /** List all actions in a category with their params */
-    listActions(category) {
-        const catDesc = CATEGORIES[category];
+    listActions(category: string): string {
+        const catDesc = Object.hasOwn(CATEGORIES, category) ? CATEGORIES[category as Category] : undefined;
         if (!catDesc) {
             const available = Object.keys(CATEGORIES).join(", ");
             return `Unknown category "${category}". Available categories: ${available}`;
@@ -81,7 +95,7 @@ export class ToolRegistry {
         return lines.join("\n");
     }
     /** Execute an action */
-    async execute(category, action, params) {
+    async execute(category: string, action: string, params: ToolParams): Promise<unknown> {
         const tool = this.tools.get(action);
         if (!tool) {
             // Try to find closest match in category
@@ -99,7 +113,7 @@ export class ToolRegistry {
         return tool.handler(params);
     }
 }
-function categorize(name) {
+export function categorize(name: string): Category {
     // System & Services
     if (name.startsWith("system_") ||
         name.startsWith("service_") ||
@@ -177,12 +191,16 @@ function categorize(name) {
         return "api";
     return "system";
 }
-function extractParams(schema) {
-    const params = [];
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+    return value !== null && typeof value === "object" ? value as Record<string, unknown> : undefined;
+}
+
+function extractParams(schema: ToolSchema): { name: string; required: boolean; description: string }[] {
+    const params: { name: string; required: boolean; description: string }[] = [];
     for (const [name, field] of Object.entries(schema)) {
-        if (!field || typeof field !== "object")
+        const f = asRecord(field);
+        if (!f)
             continue;
-        const f = field;
         let description = "";
         let required = true;
         // Zod 4: description is a property
@@ -191,8 +209,8 @@ function extractParams(schema) {
         }
         // Check nested _zod or _def for description
         if (!description) {
-            const def = f?._zod?.def || f?._def;
-            if (def?.description)
+            const def = asRecord(asRecord(f._zod)?.def) || asRecord(f._def);
+            if (typeof def?.description === "string")
                 description = def.description;
         }
         // Check if optional — Zod 4 optional types
@@ -203,7 +221,7 @@ function extractParams(schema) {
         }
         catch {
             // fallback: check type name
-            const typeName = f?._zod?.def?.typeName || f?._def?.typeName;
+            const typeName = asRecord(asRecord(f._zod)?.def)?.typeName || asRecord(f._def)?.typeName;
             if (typeName === "ZodOptional" || typeName === "optional") {
                 required = false;
             }
@@ -216,4 +234,3 @@ function extractParams(schema) {
     }
     return params;
 }
-//# sourceMappingURL=registry.js.map

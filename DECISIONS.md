@@ -1,5 +1,25 @@
 # Decisions
 
+## 2026-09-17 — registry.ts is type-checked and bound to the runTool contract
+
+`registry.ts` was compiled JavaScript saved as `.ts` under `// @ts-nocheck`, source map
+comment and all. It routes all 278 actions and had no tests. It now carries real types, and
+`test/registry.test.ts` covers category routing, dispatch, the wrong-category guard and
+discovery output.
+
+Runtime behaviour is unchanged except for one fix. `listActions` looked categories up with a
+bare index, so `constructor`, `toString` and `__proto__` resolved to inherited properties and
+reported "No actions found" instead of an unknown category. The lookup now checks own keys.
+
+`ToolRegistry` declares `implements ToolExecutor`. `run-tool.ts` takes the registry through
+that interface so tests can pass a fake, and `index.ts` is still `@ts-nocheck`, so nothing
+else would notice if the two signatures drifted. The import is type-only.
+
+The test file also runs `tsc --noEmit`. CI already type-checks in its build step, so the two
+overlap there, but it means `npm test` on its own catches a type error that strip-types would
+run straight past. It costs well under a second. The other twelve `@ts-nocheck` files are out
+of scope and stay unchecked for now.
+
 ## 2026-09-17 — Secrets are redacted once, at the output boundary
 
 `cloudsync_list` returned each task's provider credentials as-is, B2 application key and
