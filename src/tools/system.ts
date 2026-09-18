@@ -222,7 +222,7 @@ export function register(server, client) {
         const result = await client.get("/api_key");
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     });
-    server.tool("api_key_create", "Create a new API key for programmatic access to the TrueNAS API. Returns the key — store it securely as it cannot be retrieved later.", {
+    server.tool("api_key_create", "Create a new API key for programmatic access to the TrueNAS API. The key value is redacted from the response and TrueNAS never shows it again, so create a key you need to copy in the TrueNAS UI instead.", {
         name: z.string().describe("A descriptive name for the API key"),
         allowlist: z
             .array(z.object({

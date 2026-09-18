@@ -78,6 +78,16 @@ Destructive actions (reboot, shutdown and similar) require an explicit `confirm:
 
 Read-only resources surface common state without a tool call: `truenas://system/info`, `truenas://storage/pools`, `truenas://storage/datasets`, `truenas://services`, `truenas://alerts`, `truenas://network/summary`, `truenas://sharing`, `truenas://vms`, `truenas://apps`, `truenas://disks`, `truenas://boot/environments` and `truenas://system/update`.
 
+### Secrets are redacted
+
+TrueNAS returns credentials in plain text to an admin API key, and anything a tool returns lands in the model's context. So every tool result, error message and resource passes through one redaction step before it leaves the server. Cloud sync provider keys, SSH and TLS private keys, password hashes, bind passwords, CHAP secrets and alert service tokens all come back as `"[redacted]"`. Private key blocks, URL passwords and secret query parameters are scrubbed from any string, whatever field holds them.
+
+Identifiers stay, so the model can still tell which credential a task uses: credential `id` and `name`, provider `type`, bucket, folder, endpoint and region. Public keys and certificates stay too.
+
+Redaction applies to output only. Handlers still send real values to TrueNAS, so an update can never write `[redacted]` back as a credential.
+
+`api_key_create` and `keychaincredential_generate_ssh_key` can no longer show the secret they create, so make API keys and SSH keypairs in the TrueNAS UI. Secrets passed in as parameters are not redacted, because the model wrote them in the first place.
+
 ## Configuration
 
 | Variable | Required | Default | Notes |
@@ -135,7 +145,7 @@ Desktop that is `claude_desktop_config.json`, for Claude Code `.mcp.json`:
 npm test
 ```
 
-Unit tests cover the REST-to-WebSocket path translator, the dataset property normalisation and the client against a mock WebSocket server. `test/e2e-live.mjs` runs the dataset create/get flow against a real TrueNAS instance.
+Unit tests cover the REST-to-WebSocket path translator, the dataset property normalisation, the client against a mock WebSocket server and secret redaction against fixtures shaped like real TrueNAS responses. `test/e2e-live.mjs` runs the dataset create/get flow against a real TrueNAS instance.
 
 ## Notes
 

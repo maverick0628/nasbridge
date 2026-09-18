@@ -1,5 +1,40 @@
 # Decisions
 
+## 2026-09-17 — Secrets are redacted once, at the output boundary
+
+`cloudsync_list` returned each task's provider credentials as-is, B2 application key and
+S3 secret access key included, so any session that listed tasks put live keys in its
+transcript. Other actions had the same shape: certificate and SSH private keys, API key and
+password hashes, bind passwords and alert tokens. `truenas_api_call` could reach all of them.
+
+Redaction now lives in `src/redact.ts` and runs on every tool result, error message and
+resource on the way out, through `src/run-tool.ts` and a resource wrapper in `src/index.ts`.
+There was no shared response helper to put it in. Two modules define their own
+`jsonContent` and the rest call `JSON.stringify` inline, so a per-helper fix would have
+missed most of the 278 actions and every future one.
+
+Redacting in the client was rejected. Handlers would then see `[redacted]` as data, and any
+read-modify-write would send it back to the NAS as a credential.
+
+Matching is by key name after lowercasing and dropping separators: an exact list, fragments
+such as `password`, `secret` and `token`, and any name ending in `key` except public ones
+(`public_key`, `sshpubkey`, `remote_host_key`). Names that describe a secret without holding
+it (`privatekey_path`, `key_type`, `key_format`) stay. Only non-empty strings, objects and
+arrays are redacted. Null, booleans, numbers and empty strings still show whether something
+is set, and an SFTP credential's `private_key` is a keypair id, not key material. Private key
+blocks, URL passwords and secret query parameters are scrubbed from every string.
+
+`access_key_id` and a B2 provider's `account` are both redacted. TrueNAS labels the B2 field
+"Key ID". It is the application key ID, the same half of the pair as the S3 access key ID,
+and hiding one while showing the other would be arbitrary. `account` on other providers,
+such as an Azure storage account name, is kept. Credential `id`, `name` and provider `type`
+still identify which credential a task uses.
+
+Accepted cost: `api_key_create` and `keychaincredential_generate_ssh_key` can no longer
+return the secret they create, and their descriptions now say so. Known gap: a secret inside
+a field with an ordinary name, such as a Slack webhook `url` or a password typed into a cloud
+sync task's `args`, is not caught.
+
 ## 2026-09-16 — Decision log names no private repos
 
 The earlier entries named a private predecessor repo, a private automation mirror and a
