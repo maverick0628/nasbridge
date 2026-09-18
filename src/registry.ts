@@ -44,6 +44,11 @@ export class ToolRegistry implements ToolExecutor {
         const category = categorize(name);
         this.tools.set(name, { name, description, schema, handler, category });
     }
+    /** Names of categories that hold at least one tool, in declaration order */
+    categoryNames(): Category[] {
+        const used = new Set([...this.tools.values()].map((t) => t.category));
+        return (Object.keys(CATEGORIES) as Category[]).filter((cat) => used.has(cat));
+    }
     /** List all categories with descriptions and tool counts */
     listCategories(): string {
         const counts = new Map<string, number>();

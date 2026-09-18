@@ -1,5 +1,28 @@
 # Decisions
 
+## 2026-09-18 — The tool description reads its categories and count from the registry
+
+The `truenas` tool description and its `category` parameter listed eight names typed by hand:
+the eight tool modules, not the eighteen categories. One of them, `replication`, is not a
+category at all (those actions live under `data_protection`), so a model that took the
+description at its word got `Unknown category "replication"`. Ten real categories were never
+mentioned.
+
+Both lists and the action count are now built from the registry when the server starts.
+`ToolRegistry.categoryNames()` returns categories that hold at least one action, in declared
+order, which is the same set `help` prints. An empty category is left out rather than
+advertised, since calling it would only return "No actions found".
+
+`test/index.test.ts` drives the real server over the SDK's in-memory transport and checks the
+description against what the server itself answers: the `help` listing and the unknown-category
+error. It also asserts that every declared category has actions, so a module that is written
+but never wired into `buildRegistry` fails the build instead of vanishing quietly.
+
+To make that test possible, `index.ts` and `tools/index.ts` now import siblings with `.ts`
+extensions, as the type-checked files already do. `rewriteRelativeImportExtensions` turns them
+back into `.js` in `dist`. Both files are still `@ts-nocheck`. The README and `package.json`
+still say 278 in prose, which is true today and has to be kept true by hand.
+
 ## 2026-09-17 — registry.ts is type-checked and bound to the runTool contract
 
 `registry.ts` was compiled JavaScript saved as `.ts` under `// @ts-nocheck`, source map

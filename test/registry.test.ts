@@ -111,6 +111,17 @@ describe("ToolRegistry discovery", () => {
     assert.doesNotMatch(listing, /sharing \(/);
   });
 
+  it("names used categories in declaration order, not registration order", () => {
+    const registry = new ToolRegistry();
+    assert.deepEqual(registry.categoryNames(), []);
+    registry.tool("truenas_api_call", "Raw call", {}, () => null);
+    registry.tool("replication_list", "List replications", {}, () => null);
+    registry.tool("pool_list", "List pools", {}, () => null);
+    registry.tool("dataset_list", "List datasets", {}, () => null);
+
+    assert.deepEqual(registry.categoryNames(), ["storage", "data_protection", "api"]);
+  });
+
   it("lists required and optional Zod parameters with descriptions", () => {
     const registry = new ToolRegistry();
     registry.tool("dataset_create", "Create dataset", {

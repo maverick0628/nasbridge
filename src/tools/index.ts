@@ -1,13 +1,13 @@
 // @ts-nocheck
-import { ToolRegistry } from "../registry.js";
-import { register as registerSystem } from "./system.js";
-import { register as registerStorage } from "./storage.js";
-import { register as registerSharing } from "./sharing.js";
-import { register as registerNetwork } from "./network.js";
-import { register as registerVm } from "./vm.js";
-import { register as registerAlert } from "./alert.js";
-import { register as registerReplication } from "./replication.js";
-import { register as registerFilesystem } from "./filesystem.js";
+import { ToolRegistry } from "../registry.ts";
+import { register as registerSystem } from "./system.ts";
+import { register as registerStorage } from "./storage.ts";
+import { register as registerSharing } from "./sharing.ts";
+import { register as registerNetwork } from "./network.ts";
+import { register as registerVm } from "./vm.ts";
+import { register as registerAlert } from "./alert.ts";
+import { register as registerReplication } from "./replication.ts";
+import { register as registerFilesystem } from "./filesystem.ts";
 export function buildRegistry(client) {
     const registry = new ToolRegistry();
     // All register() functions call registry.tool() which captures definitions
