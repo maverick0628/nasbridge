@@ -5,6 +5,8 @@ import { z } from "zod";
 import { TrueNASClient } from "./client.js";
 import { buildRegistry } from "./tools/index.js";
 import { registerResources } from "./resources.js";
+import { redactingResourceServer } from "./redact.js";
+import { runTool } from "./run-tool.js";
 export function createServer(config) {
     const client = new TrueNASClient({
         baseUrl: config.baseUrl,
@@ -24,7 +26,9 @@ Usage:
   - category only → list available actions in that category with parameters
   - category + action → execute (pass action-specific params in 'params')
 
-Categories: system, storage, sharing, network, vm, alert, replication, filesystem`, {
+Categories: system, storage, sharing, network, vm, alert, replication, filesystem
+
+Secret values in responses (keys, passwords, tokens, private keys, password hashes) are replaced with "[redacted]" and cannot be read through this tool.`, {
         category: z
             .string()
             .optional()
@@ -48,31 +52,9 @@ Categories: system, storage, sharing, network, vm, alert, replication, filesyste
                 content: [{ type: "text", text: registry.listActions(category) }],
             };
         }
-        try {
-            const result = await registry.execute(category, action, params || {});
-            if (result &&
-                typeof result === "object" &&
-                "content" in result) {
-                return result;
-            }
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: typeof result === "string" ? result : JSON.stringify(result, null, 2),
-                    },
-                ],
-            };
-        }
-        catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            return {
-                content: [{ type: "text", text: `Error: ${message}` }],
-                isError: true,
-            };
-        }
+        return runTool(registry, category, action, params || {});
     });
-    registerResources(server, client);
+    registerResources(redactingResourceServer(server), client);
     return server;
 }
 export async function startStdio(config) {

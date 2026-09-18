@@ -309,7 +309,7 @@ export function register(server, client) {
         attributes: z.record(z.string(), z.unknown()).describe("Type-specific attributes (e.g. private_key, public_key, host, username, etc.)"),
     }, async (params) => jsonContent(await client.post("/keychaincredential", params)));
     server.tool("keychaincredential_delete", "Delete an SSH credential or keypair", { id: z.number().describe("Keychain credential ID") }, async ({ id }) => jsonContent(await client.delete(`/keychaincredential/id/${id}`)));
-    server.tool("keychaincredential_generate_ssh_key", "Generate a new SSH key pair", {}, async () => jsonContent(await client.post("/keychaincredential/generate_ssh_key_pair")));
+    server.tool("keychaincredential_generate_ssh_key", "Generate a new SSH key pair. The private key is redacted from the response, so it cannot be passed to keychaincredential_create; generate a stored keypair in the TrueNAS UI under SSH Keypairs.", {}, async () => jsonContent(await client.post("/keychaincredential/generate_ssh_key_pair")));
     server.tool("keychaincredential_remote_ssh_scan", "Scan a remote host for its SSH host key", {
         host: z.string().describe("Remote hostname or IP"),
         port: z.number().optional().describe("SSH port (default 22)"),
