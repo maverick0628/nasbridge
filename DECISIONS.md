@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-10-16 — Published to npm as nasbridge
+
+nasbridge 1.0.0 is on npm, so the README now leads with `npx -y nasbridge` and keeps the build-from-source path as a fallback. Publishing turns the MCP client config into two words instead of an absolute path to a local checkout. There is no publish automation yet: releases go out by hand with `npm publish`, which runs the build and tests first through `prepublishOnly` and needs a two-factor approval on npmjs.com.
+
 ## 2026-09-18 — The tool description reads its categories and count from the registry
 
 The `truenas` tool description and its `category` parameter listed eight names typed by hand:
