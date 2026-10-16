@@ -1,6 +1,6 @@
 {
   "name": "nasbridge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for TrueNAS — manage ZFS pools, datasets, snapshots, SMB/NFS shares, VMs and replication from Claude Desktop, Claude Code or Cursor. 278 actions behind one hierarchical tool.",
   "license": "MIT",
   "author": "Duncan Smith",
