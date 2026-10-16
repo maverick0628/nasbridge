@@ -1,6 +1,7 @@
 # nasbridge — control TrueNAS from Claude
 
 [![CI](https://github.com/maverick0628/nasbridge/actions/workflows/ci.yml/badge.svg)](https://github.com/maverick0628/nasbridge/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/nasbridge)](https://www.npmjs.com/package/nasbridge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TrueNAS](https://img.shields.io/badge/TrueNAS-26-0095D5)](https://www.truenas.com/)
 [![MCP](https://img.shields.io/badge/MCP-stdio-8A63D2)](https://modelcontextprotocol.io)
@@ -112,12 +113,10 @@ The client connects with `wss://` by default. A self-signed cert needs `TRUENAS_
 
 ## Install and run
 
+nasbridge is on npm, so there is nothing to clone or build:
+
 ```bash
-git clone https://github.com/maverick0628/nasbridge.git
-cd nasbridge
-npm install
-npm run build
-TRUENAS_URL=https://truenas.local TRUENAS_API_KEY=1-yourkey node dist/cli.js
+TRUENAS_URL=https://truenas.local TRUENAS_API_KEY=1-yourkey npx -y nasbridge
 ```
 
 Create the API key in the TrueNAS UI under **Credentials → Local Users → API Keys**.
@@ -129,8 +128,8 @@ Desktop that is `claude_desktop_config.json`, for Claude Code `.mcp.json`:
 
 ```json
 {
-  "command": "node",
-  "args": ["/path/to/nasbridge/dist/cli.js"],
+  "command": "npx",
+  "args": ["-y", "nasbridge"],
   "env": {
     "TRUENAS_URL": "https://truenas.local",
     "TRUENAS_API_KEY": "1-yourkey",
@@ -138,6 +137,17 @@ Desktop that is `claude_desktop_config.json`, for Claude Code `.mcp.json`:
   }
 }
 ```
+
+### From source
+
+```bash
+git clone https://github.com/maverick0628/nasbridge.git
+cd nasbridge
+npm install
+npm run build
+```
+
+Then point your client at `node /path/to/nasbridge/dist/cli.js` instead of `npx`.
 
 ## Tests
 
